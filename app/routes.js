@@ -9,7 +9,10 @@ module.exports = function(app, passport, db) {
 
     // PROFILE SECTION =========================
     app.get('/profile', isLoggedIn, function(req, res) {
-        db.collection('messages').find().toArray((err, result) => {
+        db.collection('messages')
+        .find()
+        .sort({thumbUp:-1})
+        .toArray((err, result) => {
           if (err) return console.log(err)
           res.render('profile.ejs', {
             user : req.user,
@@ -36,11 +39,13 @@ module.exports = function(app, passport, db) {
       })
     })
 
-    app.put('/messages', (req, res) => {
-      db.collection('messages')
+
+    app.put('/messages', (req, res) => {      
+      if(req.body.thumbUp !== undefined){
+        db.collection('messages')
       .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
         $set: {
-          thumbUp:req.body.thumbUp + 1
+          thumbUp:req.body.thumbUp + 1,
         }
       }, {
         sort: {_id: -1},
@@ -49,6 +54,20 @@ module.exports = function(app, passport, db) {
         if (err) return res.send(err)
         res.send(result)
       })
+      }else if(req.body.thumbDown !==undefined){
+        db.collection('messages')
+      .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
+        $set: {
+          thumbDown:req.body.thumbDown + 1,
+        }
+      }, {
+        sort: {_id: -1},
+        upsert: true
+      }, (err, result) => {
+        if (err) return res.send(err)
+        res.send(result)
+      })
+      }
     })
 
     app.delete('/messages', (req, res) => {
