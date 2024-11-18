@@ -2,6 +2,9 @@
 
 A full-stack web application that allows users to connected with friends by sharing messages and images. Engage with previous messages with replies, thumbs up, and thumbs down! Includes user authentication.
 
+![Screenshot 2024-11-18 at 11 39 30 AM](https://github.com/user-attachments/assets/7df341a8-f86b-4aab-9423-07c84a5f18d4)
+
+
 ## Features
 
 - 👤  User Authentication (Sign up, Login, Logout)
