@@ -18,7 +18,10 @@ let session      = require('express-session');
 
 let configDB = require('./config/database.js');
 
-let db
+let db,
+  dbConnectionStr =
+    "mongodb+srv://basilkalurosy:Rosy7412@rosyb.pt1jk.mongodb.net/Chat?retryWrites=true&w=majority&appName=RosyB";
+dbName = "RosyB";
 
 // configuration ===============================================================
 mongoose.connect(configDB.url, (err, database) => {
