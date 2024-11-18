@@ -1,69 +1,149 @@
 <!doctype html>
 <html>
+
 <head>
-    <title>21 Savage Fan Site</title>
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
-    <link rel="stylesheet" href="style.css">
+  <title>Express Link</title>
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Asset&family=Cardo:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=Goblin+One&family=Honk&family=Permanent+Marker&family=Rock+Salt&family=Young+Serif&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-<div class="container">
+  <div class="container">
 
     <div class="page-header text-center">
-        <h1><span class="fa fa-anchor"></span> Profile Page</h1>
-        <a href="/logout" class="btn btn-default btn-sm">Logout</a>
+      <h1><span class="fa fa-envelope"></span> Message Board</h1>
     </div>
 
     <div class="row">
+      <div class="col-sm-6">
+        <div class="well">
+          <h3>User Profile</h3>
+          <p>
+            <strong>Email:</strong> <%= user.local.email %><br>
+            <strong>Username:</strong> <%= user.local.username %><br>
+          </p>
+        </div>
 
-        <!-- LOCAL INFORMATION -->
-        <div class="col-sm-6">
-            <div class="well">
-                <h3><span class="fa fa-user"></span> Local</h3>
 
-                <% if (user.local.email) { %>
-                    <p>
-                        <strong>id</strong>: <%= user._id %><br>
-                        <strong>email</strong>: <%= user.local.email %><br>
-                        <strong>password</strong>: <%= user.local.password %>
-                    </p>
+        <!--Post section-->
+        <div class="well">
+          <h3>Create a Post</h3>
+          <% if (user.local.email || user.local.username) { %>
+          <form action="/createPost" method="POST" enctype="multipart/form-data" class="message-form">
+            <input type="hidden" value="<%= user.local.username %>" name="username">
 
-                    <a href="/unlink/local" class="btn btn-default">Unlink</a>
-                <% } else { %>
-                    <a href="/connect/local" class="btn btn-default">Connect Local</a>
-                <% } %>
-
+            <div class="form-group">
+              <textarea class="form-control" name="msg" placeholder="Write your message" required></textarea>
             </div>
-        </div>
-        <div class="col-sm-6">
-          <h3>Messages</h3>
-          <ul class="messages">
-          <% for(var i=0; i<messages.length; i++) {%>
-            <li class="message">
-              <span><%= messages[i].name %></span>
-              <span><%= messages[i].msg %></span>
-              <span><%= messages[i].thumbUp %></span>
-              <span><i class="fa fa-thumbs-up" aria-hidden="true"></i></span>
-              <span><%= messages[i].thumbDown %></span>
-              <span><i class="fa fa-thumbs-down" aria-hidden="true"></i></span>
-              <span><i class="fa fa-trash-o" aria-hidden="true"></i></span>
-            </li>
-          <% } %>
-          </ul>
 
-          <h2>Add a message</h2>
-        <% if (user.local.email) { %>
-          <form action="/messages" method="POST">
-            <input type="text" value="<%= user.local.email %>" name="name">
-            <input type="text" placeholder="message" name="msg">
-            <button type="submit">Submit</button>
+            <div class="form-group">
+              <label for="image">Add Image (optional)</label>
+              <input type="file" class="form-control-file" name="image" accept="image/*">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Share Post</button>
           </form>
+          <% } %>
         </div>
-        <% } %>
+      </div>
 
-</div>
+      <!-- Messages section -->
+      <div class="col-sm-6">
+        <div class="board">
+          <h3>Posts</h3>
+          <ol class="messages">
+            <% for(var i=0; i<messages.length; i++) {%>
+            <li class="message" data-id="<%= messages[i]._id %>" >
+              <div class="message-header">
+                <span class="user-email"><%= messages[i].email || messages[i].username  %></span>
+                <small class="text-muted"><%= new Date(messages[i].createdAt).toLocaleString() %></small>
+              </div>
 
-<script src="main.js"></script>
+              <div class="message-content">
+                <span class="message-text"><%= messages[i].msg %></span>
+                <% if (messages[i].image) { %>
+                <img src="/uploads/<%= messages[i].image %>" alt="Message image" class="message-image">
+                <% } %>
+              </div>
 
+              <div class="message-actions">
+                <button class="thumbUp" title="Like" >
+                  <i class="fa fa-thumbs-up"></i>
+                  <span class="count"><%= messages[i].thumbUp%></span>
+                </button>
+                <button class="thumbDown" title="Dislike">
+                  <i class="fa fa-thumbs-down"></i>
+                  <span class="count"><%= messages[i].thumbDown%></span>
+                </button>
+                <button class="reply-btn" onclick="showReplyForm('<%= messages[i]._id %>')">
+                  <i class="fa fa-reply"></i> Reply
+                </button>
+                <% if (messages[i].username === user.local.username || messages[i].email === user.local.email) { %>
+                <button class="delete" data-id="<%= messages[i]._id %>" title="Delete">
+                  <i class="fa fa-trash-o"></i>
+                </button>
+                <% } %>
+              </div>
+
+              <!-- Reply Form -->
+              <div class="reply-form" id="reply-form-<%= messages[i]._id %>" style="display:none" >
+                <form onsubmit="submitReply(event, '<%= messages[i]._id %>')">
+                  <div class="form-group">
+                    <textarea class="form-control" placeholder="Write your reply..." required></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-sm">Submit Reply</button>
+                </form>
+              </div>
+
+              <!-- Replies Section -->
+              <% if (messages[i].replies && messages[i].replies.length > 0) { %>
+              <div class="replies">
+                <% messages[i].replies.forEach(function(reply) { %>
+                <div class="reply" data-id="<%= reply._id %>">
+                  <div class="reply-header">
+                    <span class="user-email"><%= messages[i].username %></span>
+                    <small class="text-muted"><%= new Date(messages[i].createdAt).toLocaleString() %></small>
+                  </div>
+                  <div class="reply-content">
+                    <span class="reply-text"><%= reply.msg %></span>
+                  </div>
+                  <div class="reply-actions">
+                    <button class="reply-thumbUp" data-message-id="<%= messages[i]._id %>" data-reply-id="<%= reply._id %>">
+                      <i class="fa fa-thumbs-up"></i>
+                      <span class="count"><%= reply.thumbUp || 0 %></span>
+                    </button>
+                    <button class="reply-thumbDown" data-message-id="<%= messages[i]._id %>" data-reply-id="<%= reply._id %>">
+                      <i class="fa fa-thumbs-down"></i>
+                      <span class="count"><%= reply.thumbDown || 0 %></span>
+                    </button>
+                    <% if (messages[i].username === user.local.username || messages[i].email === user.local.email) { %>
+                    <button class="reply-delete" data-message-id="<%= messages[i]._id %>"data-reply-id="<%= reply._id %>"">
+                      <i class="fa fa-trash-o"></i>
+                    </button>
+                    <% } %>
+
+                  </div>
+                </div>
+                <% }); %>
+              </div>
+              <% } %>
+            </li>
+            <% } %>
+          </ol>
+
+        </div>
+      </div>
+
+      <div class="page-footer text-center">
+        <a href="/logout" class="btn btn-default btn-sm">Logout</a>
+      </div>
+
+    </div>
+    <script src="main.js"></script>
 </body>
+
 </html>

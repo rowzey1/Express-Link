@@ -2,22 +2,23 @@
 
 // set up ======================================================================
 // get all the tools we need
-var express  = require('express');
-var app      = express();
-var port     = process.env.PORT || 8080;
+let express  = require('express');
+let multer= require('multer');
+let app      = express();
+let port     = process.env.PORT || 1111;
 const MongoClient = require('mongodb').MongoClient
-var mongoose = require('mongoose');
-var passport = require('passport');
-var flash    = require('connect-flash');
+let mongoose = require('mongoose');
+let passport = require('passport');
+let flash    = require('connect-flash');
 
-var morgan       = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser   = require('body-parser');
-var session      = require('express-session');
+let morgan       = require('morgan');
+let cookieParser = require('cookie-parser');
+let bodyParser   = require('body-parser');
+let session      = require('express-session');
 
-var configDB = require('./config/database.js');
+let configDB = require('./config/database.js');
 
-var db
+let db
 
 // configuration ===============================================================
 mongoose.connect(configDB.url, (err, database) => {
@@ -48,7 +49,16 @@ app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
 
-
 // launch ======================================================================
 app.listen(port);
 console.log('The magic happens on port ' + port);
+
+// Add after your routes
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ 
+        success: false, 
+        error: err.message || 'Internal Server Error'
+    });
+});
+

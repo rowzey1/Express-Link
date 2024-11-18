@@ -1,7 +1,228 @@
 body{
-  padding-top:80px;
-  word-wrap:break-word;
+  background: #ffe23b;
 }
+.container {
+    padding: 30px;
+    max-width: 1200px;
+    font-family:'Cardo','Serif';
+    font-size:15px;
+    color:black
+}
+
+.container h1{
+  font-family:'Honk';
+  font-size: 60px;
+}
+
+.container p{
+  text-align: center;
+}
+
+.container h3{
+  font-family:'Goblin One';
+  font-size: 20px;
+  text-align: center;
+  text-decoration: underline;
+}
+
+.container a{
+  font-family: 'Honk';
+  font-size: 30px;
+}
+
+.page-header {
+   margin-bottom: 40px;
+   padding-bottom: 20px;
+   border-bottom: 5px double black;
+}
+
+.well{
+  background:rgb(242, 119, 139);
+  border: 5px double black;
+}
+
+/* message Styles */
+.messages {
+    padding: 0;
+    margin: 0;
+}
+
+.message {
+    background: rgb(242, 119, 139);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.message-image {
+  max-width: 300px;
+  max-height: 300px;
+  margin: 10px 0;
+}
+
+.message-actions {
+  margin-top: 5px;
+}
+
+.message-actions button {
+  margin-right: 10px;
+  padding: 5px 10px;
+  background: white;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.message-text {
+  display: block;
+  margin: 10px 0;
+  background:white;
+}
+
+.user-email, .text-muted {
+  font-weight: bold;
+  color:black;
+  width:auto
+}
+
 img{
-  height: 200px;
+  width:300px
 }
+
+/*Reply styles*/
+.replies {
+    margin-top: 15px;
+    padding-left: 20px;
+    border-left: 2px solid #e0e0e0;
+}
+
+.reply {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 10px;
+    list-style: none;
+}
+
+.reply-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.reply-content {
+    margin-bottom: 8px;
+}
+
+.reply-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.reply-form {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.reply-form textarea {
+    min-height: 60px;
+    margin-bottom: 10px;
+}
+
+.reply-btn {
+    color: black;
+}
+
+.reply-btn:hover {
+    color: green;
+}
+
+/* Vote Counts */
+.count {
+    font-size: 0.9em;
+    font-weight: 500;
+    margin-left: 3px;
+}
+
+/* Message Actions */
+.message-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.message-actions button {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.thumbUp:hover, .reply-thumbUp:hover {
+    color: blue;
+}
+
+.thumbDown:hover, .reply-thumbDown:hover {
+    color: #f44336;
+}
+
+.delete-btn {
+  color:black;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s ease;
+}
+
+.delete:hover, .reply-delete:hover {
+    color:green;
+}
+
+.fa-trash {
+    font-size: 1.1em;
+}
+
+/* index.ejs Styles */
+.jumbotron>h1{
+  font-family: 'Honk';
+  font-size: 80px;
+
+}
+
+.jumbotron p{
+  font-family:'Cardo';
+  font-size: 20px;
+}
+
+.signup{
+  font-family: 'Honk';
+  width:40%;
+  display: flex;
+  flex-direction: row;
+  margin: 0 auto;
+
+}
+
+.signup a{
+  font-size:30px;
+  text-align: center;
+  margin:30px
+
+}
+
+.signup span{
+  padding:10px
+}
+
+textarea.form-control {
+  border: 2px solid #333;
+  border-radius: 8px;
+  padding: 12px;
+  resize: vertical;
+}
+
+

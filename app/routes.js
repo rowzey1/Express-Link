@@ -1,6 +1,23 @@
-module.exports = function(app, passport, db) {
+const multer = require('multer');
+const path = require('path');
+const ObjectId = require('mongodb').ObjectId;
+
+//Config for file upload
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads/') //uploaded image aresaved to this path
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname))
+    }
+});
+
+const upload = multer({ storage: storage });
 
 // normal routes ===============================================================
+
+module.exports = function(app, passport, db) {
+
 
     // show the home page (will also have our login links)
     app.get('/', function(req, res) {
@@ -31,51 +48,188 @@ module.exports = function(app, passport, db) {
 
 // message board routes ===============================================================
 
-    app.post('/messages', (req, res) => {
-      db.collection('messages').save({name: req.body.name, msg: req.body.msg, thumbUp: 0, thumbDown:0}, (err, result) => {
-        if (err) return console.log(err)
-        console.log('saved to database')
-        res.redirect('/profile')
+app.post('/createPost', upload.single('image'), (req, res) => {
+    const post = {
+        username: req.user.local.username,
+        msg: req.body.msg,
+        thumbUp: 0,
+        thumbDown: 0,
+        createdAt: new Date(),
+        replies:[]
+    };
+
+    if (req.file) {
+        post.image = req.file.filename;
+    }
+
+    db.collection('messages')
+        .insertOne(post)
+        .then(result => {
+            console.log('Post created');
+            res.redirect('/profile');
+        })
+        .catch(err => {
+            console.error('Error creating post:', err);
+            res.status(500).send('Error creating post');
+        });
+});
+
+app.post('/reply', (req, res) => {
+    console.log('Reply request created:', req.body);
+    const messageId = ObjectId(req.body.messageId);
+    const reply = {
+        _id: new ObjectId(),
+        username: req.user.local.username,
+        msg: req.body.reply,
+        createdAt: new Date(),
+        thumbUp: 0,
+        thumbDown: 0
+    };
+
+    db.collection('messages')
+        .findOneAndUpdate(
+            { _id: messageId },
+            { 
+                $push: { 
+                    replies: reply 
+                }
+            },
+            { 
+                returnDocument: 'after'
+            }
+        )
+        .then(result => {
+            console.log('Reply added:', result);
+            res.json({ success: true, reply: reply });
+        })
+        .catch(err => {
+            console.error('Error adding reply:', err);
+            res.status(500).json({ success: false, error: err.message });
+        });
+});
+
+// Update the PUT route to like post
+app.put('/messages', (req, res) => {
+    console.log('Received update request:', req.body);
+    const messageId = ObjectId(req.body.messageId);
+    const action = req.body.action;
+    
+    let update = {};
+    if (action === 'thumbUp') {
+        update = { $inc: { thumbUp: 1 } };
+    } else if (action === 'thumbDown') {
+        update = { $inc: { thumbDown: 1 } };
+    }
+    
+    console.log('Update:', update);
+
+    db.collection('messages')
+        .findOneAndUpdate(
+            { _id: messageId },
+            update,
+            { 
+                returnDocument: 'after',
+                upsert: false
+            }
+        )
+        .then(result => {
+            console.log('Updated document:', result);
+            res.json({ success: true, result: result });
+        })
+        .catch(err => {
+            console.error('Error updating document:', err);
+            res.status(500).json({ success: false, error: err.message });
+        });
+});
+
+//delete message
+app.delete('/messages', (req, res) => {
+  console.log('Delete request received:', req.body);
+  const messageId = ObjectId(req.body.messageId);
+  
+  db.collection('messages')
+      .deleteOne({ _id: messageId })
+      .then(result => {
+          console.log('Message deleted');
+          res.json({ success: true });
       })
-    })
+      .catch(err => {
+          console.error('Error deleting message:', err);
+          res.status(500).json({ success: false, error: err.message });
+      });
+});
 
+// thumbs up or down reply
+app.put('/replyVote', (req, res) => {
+    const messageId = ObjectId(req.body.messageId);
+    const replyId = ObjectId(req.body.replyId);
+    const action = req.body.action;
+    
+    console.log('Processing reply vote:', {messageId, replyId, action});
 
-    app.put('/messages', (req, res) => {      
-      if(req.body.thumbUp !== undefined){
-        db.collection('messages')
-      .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
-        $set: {
-          thumbUp:req.body.thumbUp + 1,
+    // Create the update query
+    const updateQuery = {
+        $inc: {
+            [`replies.$.${action}`]: 1
         }
-      }, {
-        sort: {_id: -1},
-        upsert: true
-      }, (err, result) => {
-        if (err) return res.send(err)
-        res.send(result)
-      })
-      }else if(req.body.thumbDown !==undefined){
-        db.collection('messages')
-      .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
-        $set: {
-          thumbDown:req.body.thumbDown + 1,
-        }
-      }, {
-        sort: {_id: -1},
-        upsert: true
-      }, (err, result) => {
-        if (err) return res.send(err)
-        res.send(result)
-      })
-      }
-    })
+    };
 
-    app.delete('/messages', (req, res) => {
-      db.collection('messages').findOneAndDelete({name: req.body.name, msg: req.body.msg}, (err, result) => {
-        if (err) return res.send(500, err)
-        res.send('Message deleted!')
-      })
+    db.collection('messages').findOneAndUpdate(
+        { 
+            _id: messageId,
+            'replies._id': replyId 
+        },
+        updateQuery,
+        { 
+            returnDocument: 'after'
+        }
+    )
+    .then(result => {
+        console.log('Vote result:', result);
+        if (!result.value) {
+            return res.status(404).json({ success: false, error: 'Reply not found' });
+        }
+        res.json({ 
+            success: true, 
+            result: result.value,
+            message: 'Vote recorded successfully'
+        });
     })
+    .catch(err => {
+        console.error('Error updating reply vote:', err);
+        res.status(500).json({ success: false, error: err.message });
+    });
+});
+
+// Delete a reply
+app.delete('/deleteReply', (req, res) => {
+    const messageId = ObjectId(req.body.messageId);
+    const replyId = ObjectId(req.body.replyId);
+    
+    db.collection('messages')
+        .findOneAndUpdate(  
+            { _id: messageId },
+            { 
+                $pull: { 
+                    replies: { 
+                        _id: replyId 
+                    } 
+                } 
+            },
+            { returnDocument: 'after' }  
+        )
+        .then(result => {
+            if (!result.value) {
+                return res.status(404).json({ success: false, error: 'Message or reply not found' });
+            }
+            console.log('Reply deleted');
+            res.json({ success: true });
+        })
+        .catch(err => {
+            console.error('Error deleting reply:', err);
+            res.status(500).json({ success: false, error: err.message });
+        });
+});
 
 // =============================================================================
 // AUTHENTICATE (FIRST LOGIN) ==================================================
@@ -120,6 +274,7 @@ module.exports = function(app, passport, db) {
         var user            = req.user;
         user.local.email    = undefined;
         user.local.password = undefined;
+        user.local.username = undefined;
         user.save(function(err) {
             res.redirect('/profile');
         });

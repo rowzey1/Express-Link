@@ -1,12 +1,14 @@
 # Message Board Application
 
-A full-stack web application that allows users to post messages, interact with them through likes/dislikes, and includes user authentication.
+A full-stack web application that allows users to connected with friends by sharing messages and images. Engage with previous messages with replies, thumbs up, and thumbs down! Includes user authentication.
 
 ## Features
 
-- User Authentication (Sign up, Login, Logout)
-- Create and delete messages
-- Like/Dislike/Sort functionality for messages
+- 👤  User Authentication (Sign up, Login, Logout)
+- 📝 Create and delete messages
+- 💬 Reply to Messages
+- 👍 Like/Dislike messages and replies
+- 🗑️ Delete your own messages and replies
 - Secure profile access
 - MongoDB integration for data persistence
 
@@ -16,10 +18,13 @@ A full-stack web application that allows users to post messages, interact with t
 - **Backend**: Node.js, Express
 - **Database**: MongoDB
 - **Authentication**: Passport.js
+
 - **Other Tools**: 
   - connect-flash (for flash messages)
   - express-session (session management)
   - mongoose (MongoDB object modeling)
+  - multer(for image upload)
+
 
 ## Installation
 
@@ -28,15 +33,17 @@ A full-stack web application that allows users to post messages, interact with t
 3. Create a `config/database.js` file with your MongoDB connection string
 4. Start the server
 
-The application will be running on `http://localhost:8080`
+The application will be running on `http://localhost:1111`
 
 ## Usage
 
-1. Create an account or login
-2. Post messages on your profile page
-3. Interact with messages:
+1. Register a new account or login with existing account
+2. Create messages by typing in the message box and clicking "Share Post"
+3. Add Image(optional)
+4. Interact with messages:
    - 👍 Like messages
    - 👎 Dislike messages
+   - 💬 Reply to messages
    - 🗑️ Delete messages
 
 ## API Routes
@@ -52,4 +59,9 @@ The application will be running on `http://localhost:8080`
 - `POST /messages` - Create new message
 - `PUT /messages` - Update message (likes/dislikes)
 - `DELETE /messages` - Delete message
+
+### Replies
+- `POST /reply` - Create a new reply
+- `PUT /replyVote` - Update replies (likes/dislikes)
+- `DELETE /deleteReply` - Delete a reply
 
