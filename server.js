@@ -1,3 +1,4 @@
+require('dotenv').config();
 // server.js
 
 // set up ======================================================================
@@ -19,11 +20,24 @@ let session      = require('express-session');
 let configDB = require('./config/database.js');
 
 // configuration ===============================================================
-mongoose.connect(configDB.url, (err, database) => {
-  if (err) return console.log(err)
-  db = database
-  require('./app/routes.js')(app, passport, db);
-}); // connect to our database
+MongoClient.connect(process.env.DB_STRING, { useUnifiedTopology: true })
+  .then(client => {
+    const db = client.db(process.env.DB_NAME);
+    
+    require('./app/routes.js')(app, passport, db);
+    
+    app.listen(port, () => {
+      console.log('The magic happens on port ' + port);
+    });
+  })
+  .catch(error => {
+    console.error('Database Connection Error:', error);
+  });
+//mongoose.connect(configDB.url, (err, database) => {
+//  if (err) return console.log(err)
+//  db = database
+//  require('./app/routes.js')(app, passport, db);
+//}); // connect to our database
 
 require('./config/passport')(passport); // pass passport for configuration
 
@@ -46,10 +60,6 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
-
-// launch ======================================================================
-app.listen(port);
-console.log('The magic happens on port ' + port);
 
 // Add after your routes
 app.use((err, req, res, next) => {
