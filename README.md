@@ -1,4 +1,4 @@
-# Message Board Application
+# Express Link-Message Board Application
 
 A full-stack web application that allows users to connected with friends by sharing messages and images. Engage with previous messages with replies, thumbs up, and thumbs down! Includes user authentication.
 
